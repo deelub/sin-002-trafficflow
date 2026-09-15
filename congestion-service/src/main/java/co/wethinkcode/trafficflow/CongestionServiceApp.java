@@ -4,10 +4,18 @@ import io.javalin.Javalin;
 
 public class CongestionServiceApp {
 
+    private int congestionLevel = 3;
+
+
+    private static void getCongestionLevel() {
+
+    }
+
     public static void main(String[] args) {
         Javalin app = Javalin.create().start(7022);
 
         app.get("/health", ctx -> ctx.result("OK"));
+
 
         // TODO (Tracks the city-wide Congestion Level (0-8).)
         // Add domain endpoints for congestion-service here.
