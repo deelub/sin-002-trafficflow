@@ -122,11 +122,9 @@ public class IngestionServiceApp {
 
     public static void main(String[] args) {
 
-
-        List<signalRecord> cleanedData = cleanFile("/intersections-legacy.csv");
         Javalin app = Javalin.create();
         app.get("/health", ctx -> ctx.result("ok"));
-        app.get("/intersections", ctx -> ctx.json(cleanedData));
+
         // TODO: read and clean src/main/resources/intersections-legacy.csv (intersections, districts, signal types data —
         // trim whitespace, fix casing, normalize dates/booleans) and expose the
         // cleaned records here for the other services to consume.
