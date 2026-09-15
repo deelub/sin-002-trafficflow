@@ -10,6 +10,7 @@ import java.util.*;
 
 public class IngestionServiceApp {
 
+    private static List<signalRecord> records = new ArrayList<>();
 
     public static class signalRecord {
         private final String intersectionID;
@@ -39,11 +40,13 @@ public class IngestionServiceApp {
         public String getActiveFlag() {
             return activeFlag;
         }
+
+
     }
 
 
     public static List<signalRecord> cleanFile(String filename) {
-        List<signalRecord> records = new ArrayList<>();
+
         Set<String> seenIds = new HashSet<>();
 
         try (InputStream is = IngestionServiceApp.class.getResourceAsStream(filename);
@@ -117,6 +120,10 @@ public class IngestionServiceApp {
             e.printStackTrace();
         }
 
+        return records;
+    }
+
+    public static List<signalRecord> getRecords() {
         return records;
     }
 
