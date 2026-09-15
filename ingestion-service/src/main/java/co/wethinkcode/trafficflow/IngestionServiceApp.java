@@ -11,7 +11,34 @@ import java.util.*;
 public class IngestionServiceApp {
 
 
-    public record signalRecord(String intersectionID, String district, String signalType, Boolean activeFlag) {
+    public static class signalRecord {
+        private final String intersectionID;
+        private final String district;
+        private final String signalType;
+        private final String activeFlag;
+
+        public signalRecord(String intersectionID, String district, String signalType, String activeFlag) {
+            this.intersectionID = intersectionID;
+            this.district = district;
+            this.signalType = signalType;
+            this.activeFlag = activeFlag;
+        }
+
+        public String getIntersectionID() {
+            return intersectionID;
+        }
+
+        public String getDistrict() {
+            return district;
+        }
+
+        public String getSignalType() {
+            return signalType;
+        }
+
+        public String getActiveFlag() {
+            return activeFlag;
+        }
     }
 
 
