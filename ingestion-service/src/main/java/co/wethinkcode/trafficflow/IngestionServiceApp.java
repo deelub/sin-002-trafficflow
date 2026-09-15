@@ -81,7 +81,8 @@ public class IngestionServiceApp {
                     case "PEDESTRIAN":
                     case "STOP-SIGN":
                     case "UNKNOWN":
-                    case "westside":
+                    case "WESTSIDE":
+                    case "ROUNDABOUT":
                         rawSignalType = nextRecord[2].trim();
                         break;
                     default:
@@ -108,7 +109,7 @@ public class IngestionServiceApp {
                 }
 
 
-                records.add(new signalRecord(rawId, rawDistrict, rawSignalType, rawActiveFlag));
+                records.add(new signalRecord(rawId, Character.toUpperCase(rawDistrict.charAt(0)) + rawDistrict.substring(1).toLowerCase(), Character.toUpperCase(rawSignalType.charAt(0)) + rawSignalType.substring(1).toLowerCase(Locale.ROOT), rawActiveFlag));
 
             }
 
@@ -120,15 +121,16 @@ public class IngestionServiceApp {
     }
 
     public static void main(String[] args) {
-        Javalin app = Javalin.create().start(7020);
+
 
         List<signalRecord> cleanedData = cleanFile("/intersections-legacy.csv");
+        Javalin app = Javalin.create();
         app.get("/health", ctx -> ctx.result("ok"));
         app.get("/intersections", ctx -> ctx.json(cleanedData));
         // TODO: read and clean src/main/resources/intersections-legacy.csv (intersections, districts, signal types data —
         // trim whitespace, fix casing, normalize dates/booleans) and expose the
         // cleaned records here for the other services to consume.
-
+        app.start(7020);
         //First : clean teh csv file
         // ensure it covers all the ways to validate an active flag
         //check for no caps or irregualr caps
