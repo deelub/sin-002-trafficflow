@@ -38,7 +38,7 @@ public class RoutingServiceApp {
         }
     }
 
-    private static String getCongestionLevel() {
+    private static String getCongestionLevel() {            //change this to return nothing?/
 
 
         try {
@@ -81,6 +81,14 @@ public class RoutingServiceApp {
         }
     }
 
+    public static double travelTime() {
+        int BASE_TIME = 20;
+        double eta = BASE_TIME * (1 + (extractCongestionLevel() / 8.0));
+        return eta;
+
+    }
+
+    //Calculating eta : set a abse time :: base_time x ( 1 + congestionlevel/8);
     public static void main(String[] args) {
         Javalin app = Javalin.create().start(7023);
 
@@ -101,11 +109,14 @@ public class RoutingServiceApp {
                 return;
             }
 
+            int congestionLevel = extractCongestionLevel();
+            double etaMinutes = 20.0 * (1.0 + (congestionLevel / 8.0));
+
             ctx.json(Map.of(
                     "from", fromID,
                     "to", toID,
                     "status", "found_route",
-                    "level", extractCongestionLevel()
+                    "EstimateTime", Math.round(etaMinutes * 100.0) / 100.0
 
             ));
 
