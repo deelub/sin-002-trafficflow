@@ -37,24 +37,27 @@ public class RoutingServiceApp {
         }
     }
 
-    private static boolean getCongestionlevel(String ID) {
+    private static String getCongestionlevel() {
 
-        if (ID == null || ID.isBlank()) {
-            return false;
-        }
+
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:7021/intersections/" + ID))
+                    .uri(URI.create("http://localhost:7022/congestion"))
                     .GET()
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            return response.statusCode() == 200;
+            if (response.statusCode() == 200) {
+                return response.body();
+            } else {
+                System.err.println("Failed to get congestion level. HTTP status: " + response.statusCode());
+                return null;
+            }
         } catch (Exception e) {
-            System.err.println("Error validating intersection ID  " + e.getMessage());
-            return false;
+            System.err.println("Error getting congestion levels: " + e.getMessage());
+            return null;
         }
     }
 
@@ -81,7 +84,9 @@ public class RoutingServiceApp {
             ctx.json(Map.of(
                     "from", fromID,
                     "to", toID,
-                    "status", "found_route"
+                    "status", "found_route",
+                    "Congestion", getCongestionlevel()
+
             ));
 
             // TODO (Provides estimated travel times based on congestion and intersection.)
