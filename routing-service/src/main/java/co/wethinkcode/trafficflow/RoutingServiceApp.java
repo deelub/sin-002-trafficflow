@@ -1,5 +1,6 @@
 package co.wethinkcode.trafficflow;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.Javalin;
 
 import java.util.Map;
@@ -37,7 +38,7 @@ public class RoutingServiceApp {
         }
     }
 
-    private static String getCongestionlevel() {
+    private static String getCongestionLevel() {
 
 
         try {
@@ -58,6 +59,25 @@ public class RoutingServiceApp {
         } catch (Exception e) {
             System.err.println("Error getting congestion levels: " + e.getMessage());
             return null;
+        }
+    }
+
+    public record CongestionResponse(int level) {
+    }
+
+    private static int extractCongestionLevel() {
+        String jsonResponse = getCongestionLevel();
+        if (jsonResponse == null || jsonResponse.isBlank()) {
+            return 0;
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            CongestionResponse response = mapper.readValue(jsonResponse, CongestionResponse.class);
+            return response.level();
+        } catch (Exception e) {
+            System.err.println("Error parsing congestion JSON: " + e.getMessage());
+            return 0;
         }
     }
 
@@ -85,7 +105,7 @@ public class RoutingServiceApp {
                     "from", fromID,
                     "to", toID,
                     "status", "found_route",
-                    "Congestion", getCongestionlevel()
+                    "level", extractCongestionLevel()
 
             ));
 
