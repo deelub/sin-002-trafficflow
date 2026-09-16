@@ -37,6 +37,27 @@ public class RoutingServiceApp {
         }
     }
 
+    private static boolean getCongestionlevel(String ID) {
+
+        if (ID == null || ID.isBlank()) {
+            return false;
+        }
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:7021/intersections/" + ID))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            return response.statusCode() == 200;
+        } catch (Exception e) {
+            System.err.println("Error validating intersection ID  " + e.getMessage());
+            return false;
+        }
+    }
+
     public static void main(String[] args) {
         Javalin app = Javalin.create().start(7023);
 
