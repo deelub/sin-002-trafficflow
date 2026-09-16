@@ -129,13 +129,13 @@ public class IngestionServiceApp {
 
     public static void main(String[] args) {
 
-        Javalin app = Javalin.create();
+        Javalin app = Javalin.create().start(7020);
         app.get("/health", ctx -> ctx.result("ok"));
+        app.get("/intersections", ctx -> ctx.json(cleanFile("/intersections-legacy.csv")));
 
         // TODO: read and clean src/main/resources/intersections-legacy.csv (intersections, districts, signal types data —
         // trim whitespace, fix casing, normalize dates/booleans) and expose the
         // cleaned records here for the other services to consume.
-        app.start(7020);
         //First : clean teh csv file
         // ensure it covers all the ways to validate an active flag
         //check for no caps or irregualr caps

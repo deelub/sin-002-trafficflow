@@ -15,7 +15,7 @@ import static co.wethinkcode.trafficflow.IngestionServiceApp.cleanFile;
 
 public class IntersectionServiceApp {
 
-    public record IntersectionRecord(String id, String district, String signalType, String activeFlag) {
+    public record IntersectionRecord(String intersectionID, String district, String signalType, String activeFlag) {
     }
 
     private static List<IntersectionRecord> cleanedIntersections = new ArrayList<>();
@@ -59,7 +59,7 @@ public class IntersectionServiceApp {
                 getCleanedData();
             }
             IntersectionRecord foundRecord = cleanedIntersections.stream()
-                    .filter(record -> record.id().equalsIgnoreCase(id))
+                    .filter(record -> record.intersectionID().equalsIgnoreCase(id))
                     .findFirst()
                     .orElse(null);
 
