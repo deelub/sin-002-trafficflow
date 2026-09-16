@@ -68,7 +68,13 @@ public class RoutingServiceApp {
             String toID = ctx.queryParam("to");
 
             if (fromID == null || toID == null) {
-                ctx.status(400).result("Bothvalues are needed");
+                ctx.status(400).result("Both IDs are required");
+                return;
+            }
+
+
+            if (!getIntersections(fromID) || !getIntersections(toID)) {
+                ctx.status(400).result("Invalid ID/s");
                 return;
             }
 
