@@ -26,7 +26,9 @@ public class CongestionServiceApp {
                 return;
             }
 
+
             congestionLevel = level;
+            publishUpdate(congestionLevel);
             ctx.json(Map.of("level", congestionLevel));
         });
 
@@ -49,7 +51,8 @@ public class CongestionServiceApp {
 
             MessageProducer producer = session.createProducer(topic);
 
-            TextMessage message = session.createTextMessage("{'level':" + level + "}");
+            String jsonPayload = String.format("{\"level\": %d}", level);
+            TextMessage message = session.createTextMessage(jsonPayload);
             producer.send(message);
 
             session.close();
