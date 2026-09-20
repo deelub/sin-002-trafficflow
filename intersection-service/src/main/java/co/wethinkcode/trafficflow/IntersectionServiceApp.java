@@ -57,6 +57,12 @@ public class IntersectionServiceApp {
         }
     }
 
+    public void startHeartbeat() {
+
+        scheduler.scheduleAtFixedRate(this::sendHeartbeat, 0, 3, TimeUnit.SECONDS);
+        System.out.println("Heartbeat producer started ");
+    }
+
     private void sendHeartbeat() {
         try (Connection connection = connectionFactory.createConnection()) {
             connection.start();
@@ -82,10 +88,20 @@ public class IntersectionServiceApp {
         }
     }
 
+
+    public void stopHeartbeat() {
+        scheduler.shutdown();
+    }
+
     public static void main(String[] args) {
         getCleanedData();
 
+        IntersectionServiceApp serviceApp = new IntersectionServiceApp();
+        serviceApp.startHeartbeat();
+        Runtime.getRuntime().addShutdownHook(new Thread(serviceApp::stopHeartbeat));
+
         Javalin app = Javalin.create().start(7021);
+
 //        List<IngestionServiceApp.signalRecord> cleanedData = cleanFile("/intersections-legacy.csv");
         app.get("/intersections/{id}", ctx -> {
             String id = ctx.pathParam("id");
