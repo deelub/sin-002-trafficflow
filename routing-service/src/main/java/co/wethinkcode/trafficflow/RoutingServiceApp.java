@@ -88,6 +88,7 @@ public class RoutingServiceApp {
 
     }
 
+
     //Calculating eta : set a abse time :: base_time x ( 1 + congestionlevel/8);
     public static void main(String[] args) {
         Javalin app = Javalin.create().start(7023);
