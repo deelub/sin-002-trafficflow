@@ -9,6 +9,7 @@ public final class MqConfig {
 
     public static final String BROKER_URL = "tcp://localhost:61616";
     public static final String TOPIC = "congestion-topic";
+    public static final String HEARTBEAT_QUEUE = "intersection-heartbeat-queue";
 
     private MqConfig() {
     }
