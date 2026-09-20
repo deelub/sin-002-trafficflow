@@ -2,7 +2,9 @@ package co.wethinkcode.trafficflow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.Javalin;
+import org.apache.activemq.ActiveMQConnectionFactory;
 
+import javax.jms.*;
 import java.util.Map;
 
 
@@ -13,6 +15,7 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+import static co.wethinkcode.trafficflow.mq.MqConfig.*;
 import static java.net.URI.create;
 
 public class RoutingServiceApp {
@@ -124,6 +127,42 @@ public class RoutingServiceApp {
             // TODO (Provides estimated travel times based on congestion and intersection.)
             // Add domain endpoints for routing-service here.
         });
+    }
+
+    public static void startListening() {
+
+        new Thread
+                (() -> {
+                    try {
+                        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(BROKER_URL);
+                        Connection connection = connectionFactory.createConnection();
+                        connection.start();
+
+                        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+                        Topic topic = session.createTopic(TOPIC);
+
+                        MessageProducer producer = session.createProducer(topic);
+
+                        MessageConsumer consumer = session.createConsumer(topic);
+
+                        consumer.setMessageListener(message -> {
+                            if (message instanceof TextMessage textMessage) {
+                                try {
+                                    String payload = textMessage.getText();
+                                    System.out.println("Received update: " + payload);
+                                } catch (JMSException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+
+                        connection.start();
+
+                    } catch (JMSException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
     }
 }
 
