@@ -1,19 +1,30 @@
 package co.wethinkcode.trafficflow;
 
+import co.wethinkcode.trafficflow.mq.MqConfig;
 import io.javalin.Javalin;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.activemq.ActiveMQConnectionFactory;
 
+import javax.jms.Connection;
+import javax.jms.MessageProducer;
+import javax.jms.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static co.wethinkcode.trafficflow.IngestionServiceApp.cleanFile;
 
 public class IntersectionServiceApp {
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(MqConfig.BROKER_URL);
+    ;
 
     public record IntersectionRecord(String intersectionID, String district, String signalType, String activeFlag) {
     }
@@ -46,6 +57,30 @@ public class IntersectionServiceApp {
         }
     }
 
+    private void sendHeartbeat() {
+        try (Connection connection = connectionFactory.createConnection()) {
+            connection.start();
+
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            Queue queue = session.createQueue(MqConfig.HEARTBEAT_QUEUE);
+            MessageProducer producer = session.createProducer(queue);
+
+            long timestamp = System.currentTimeMillis();
+
+            String jsonPayload = String.format(
+                    "{\"service\": \"intersection-service\", \"timestamp\": %d}",
+                    timestamp
+            );
+
+            TextMessage message = session.createTextMessage(jsonPayload);
+            producer.send(message);
+
+            session.close();
+        } catch (JMSException e) {
+            System.err.println("Failed to send heartbeat: " + e.getMessage());
+        }
+    }
 
     public static void main(String[] args) {
         getCleanedData();
