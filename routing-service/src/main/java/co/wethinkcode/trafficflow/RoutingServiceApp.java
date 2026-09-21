@@ -1,10 +1,12 @@
 package co.wethinkcode.trafficflow;
 
+import co.wethinkcode.trafficflow.mq.MqConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.Javalin;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
 import javax.jms.*;
+import java.time.Instant;
 import java.util.Map;
 
 
@@ -14,11 +16,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static co.wethinkcode.trafficflow.mq.MqConfig.*;
 import static java.net.URI.create;
 
 public class RoutingServiceApp {
+
+    private static volatile Instant lastHeartbeatReceived = Instant.now();
+    private static volatile boolean isHealthy = true;
 
     private static boolean getIntersections(String ID) {
 
@@ -163,6 +171,21 @@ public class RoutingServiceApp {
                         e.printStackTrace();
                     }
                 }).start();
+    }
+
+    private static void startWatchdogTimer() {
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        executor.scheduleAtFixedRate(() -> {
+            long secondsSinceLastHeartbeat = Instant.now().getEpochSecond() - lastHeartbeatReceived.getEpochSecond();
+
+            if (secondsSinceLastHeartbeat > MqConfig.TIMEOUT_THRESHOLD_SECONDS) {
+                if (isHealthy) {
+                    isHealthy = false;
+                    System.err.println("[ALERT] ALARM RAISED! Intersection Service down. No heartbeat for "
+                            + secondsSinceLastHeartbeat + "s!");
+                }
+            }
+        }, 3, 3, TimeUnit.SECONDS);
     }
 }
 
